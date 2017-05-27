@@ -1,0 +1,25 @@
+{
+    "name": "tsdoc",
+    "version": "0.0.0",
+    "repository": "https://github.com/xuld/tsdoc",
+    "description": "TypeScript/JavaScript document generator",
+    "keywords": [
+        "TypeScript",
+        "document"
+    ],
+    "license": "MIT",
+    "author": "xuld <xuld@vip.qq.com>",
+    "engines": {
+        "node": ">=6.0",
+        "npm": ">=3"
+    },
+    "engineStrict": true,
+    "devDependencies": {
+        "typescript": "next",
+        "@types/node": "latest",
+        "@types/mocha": "latest"
+    },
+    "scripts": {
+
+    }
+}
