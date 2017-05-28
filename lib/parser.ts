@@ -60,7 +60,6 @@ export class DocParser {
     }
 
     private visitVariableStatement(node: ts.VariableStatement) {
-        // ts.getCombinedModifierFlags(node)
         this.visitVariableDeclarationList(node.declarationList);
     }
 
@@ -78,39 +77,6 @@ export class DocParser {
         this.members.push(member);
     }
 
-    private initMember(member: DocMember, symbol: ts.Symbol) {
-        member.symbol = symbol;
-        member.name = symbol.getName();
-        member.summary = ts.displayPartsToString(symbol.getDocumentationComment());
-        const tags = symbol.getJsDocTags();
-        for (const tag of tags) {
-            switch (tag.name) {
-                case "desc":
-                case "description":
-                case "remark":
-                    member.description = member.description ? `${member.description}\n${tag.text}` : tag.text!;
-                    break;
-                case "see":
-                case "seeAlso":
-                case "seealso":
-                    member.see.push(tag.text!);
-                    break;
-                case "example":
-                case "sample":
-                case "demo":
-                    const wrapCode = tag.text!.indexOf('```') < 0 ? '\n```js\n' + tag.text + '\n```\n' : tag.text!;
-                    member.example = member.example ? `${member.example}\n${wrapCode}` : wrapCode;
-                    break;
-                case "summary":
-                    member.summary = member.summary ? `${member.summary}\n${tag.text}` : tag.text!;
-                    break;
-                default:
-                    member.tags[tag.name] = tag.text!;
-                    break;
-            }
-        }
-    }
-
     private visitFunctionDeclaration(node: ts.FunctionDeclaration) {
         const member = new DocMethod();
         const symbol = this.checker.getSymbolAtLocation(node.name!)!;
@@ -121,6 +87,10 @@ export class DocParser {
 
     private visitSignatureDeclaration(member: DocMethod, node: ts.SignatureDeclaration) {
         const signature = this.checker.getSignatureFromDeclaration(node)!;
+        if ((signature as any).thisParameter) {
+            const paramSymbol = (signature as any).thisParameter as ts.Symbol;
+            member.thisType = this.checker.getTypeOfSymbolAtLocation(paramSymbol, paramSymbol.valueDeclaration!);
+        }
         if (signature.typeParameters) {
             for (const typeParameter of signature.typeParameters) {
                 const param = new DocTypeParameter();
@@ -174,6 +144,39 @@ export class DocParser {
                 break;
             default:
                 break;
+        }
+    }
+
+    private initMember(member: DocMember, symbol: ts.Symbol) {
+        member.symbol = symbol;
+        member.name = symbol.getName();
+        member.summary = ts.displayPartsToString(symbol.getDocumentationComment());
+        const tags = symbol.getJsDocTags();
+        for (const tag of tags) {
+            switch (tag.name) {
+                case "desc":
+                case "description":
+                case "remark":
+                    member.description = member.description ? `${member.description}\n${tag.text}` : tag.text!;
+                    break;
+                case "see":
+                case "seeAlso":
+                case "seealso":
+                    member.see.push(tag.text!);
+                    break;
+                case "example":
+                case "sample":
+                case "demo":
+                    const wrapCode = tag.text!.indexOf('```') < 0 ? '\n```js\n' + tag.text + '\n```\n' : tag.text!;
+                    member.example = member.example ? `${member.example}\n${wrapCode}` : wrapCode;
+                    break;
+                case "summary":
+                    member.summary = member.summary ? `${member.summary}\n${tag.text}` : tag.text!;
+                    break;
+                default:
+                    member.tags[tag.name] = tag.text!;
+                    break;
+            }
         }
     }
 
@@ -266,6 +269,11 @@ export class DocField extends DocMember {
  * 表示一个方法。
  */
 export class DocMethod extends DocMember {
+
+    /**
+     * 函数执行时 *this* 的类型。
+     */
+    thisType?: ts.Type;
 
     /**
      * 所有泛型的形参。
