@@ -1,6 +1,6 @@
 <script src="https://rawgit.com/Microsoft/TypeScript/master/lib/typescriptServices.js"></script>
 <textarea rows="20" style="width:100%;" onchange="parse(this.value);"></textarea>
-<input type="text" oninput="sy.textContent=ts.SyntaxKind[this.value]"><span id="sy"></span>
+<input type="text" oninput="sy.textContent=ts.SyntaxKind[+this.value]"><span id="sy"></span>
 <script>
     function parse(input, transpileOptions = {}) {
         var diagnostics = [];

@@ -56,6 +56,9 @@ export class DocParser {
             case ts.SyntaxKind.FunctionDeclaration:
                 this.visitFunctionDeclaration(node as ts.FunctionDeclaration);
                 break;
+            case ts.SyntaxKind.ClassDeclaration:
+                this.visitClassDeclaration(node as ts.ClassDeclaration);
+                break;
         }
     }
 
@@ -121,20 +124,34 @@ export class DocParser {
         }
     }
 
+    private visitClassDeclaration(node: ts.ClassDeclaration) {
+        const member = new DocClass();
+        const symbol = this.checker.getSymbolAtLocation(node.name!)!;
+        this.initMember(member, symbol);
+        for (const member of symbol.members) {
+            
+        }
+        //  symbol.members.
+        // member.extends
+        this.visitClassLikeDeclaration(member, node);
+        this.members.push(member);
+    }
+
     private visitMethodDeclaration(node: ts.MethodDeclaration) {
         console.log(node);
     }
 
-    private visitChildren(node: ts.Node) {
-        for (const child of node.getChildren()) {
-            this.visitDeclaration(child);
+    private visitClassLikeDeclaration(member: DocType, node: ts.ClassLikeDeclaration) {
+        for (const child of node.members) {
+            switch (child.kind) {
+            }
         }
     }
 
     private visitDeclaration(node: ts.Node) {
         switch (node.kind) {
             case ts.SyntaxKind.SyntaxList:
-                this.visitChildren(node);
+                this.visitClassLikeDeclaration(node);
                 break;
             case ts.SyntaxKind.VariableStatement:
                 this.visitVariableStatement(node as ts.VariableStatement);
