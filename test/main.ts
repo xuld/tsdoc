@@ -6,4 +6,4 @@ const docs = p.parse(ts.createProgram([
 ], {
 
     }));
-// console.log(docs);
+console.log(docs[0].members.map(s => (delete s.symbol, delete s.type, s)));
